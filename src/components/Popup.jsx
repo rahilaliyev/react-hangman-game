@@ -1,26 +1,37 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { checkWin } from "../utils/helper";
 
 const Popup = ({ correctLetters, wrongLetters, selectedWord, setPlayable, playAgain }) => {
-  let finalMessage = "";
-  let finalMessageRevealWord = "";
-  let playable = true;
-
-  if (checkWin(correctLetters, wrongLetters, selectedWord) === "win") {
-    finalMessage = "Congratulations! You won! 😃";
-    playable = false;
-  } else if (checkWin(correctLetters, wrongLetters, selectedWord) === "lose") {
-    finalMessage = "Unfortunately you lost. 😕";
-    finalMessageRevealWord = `...the word was: ${selectedWord}`;
-    playable = false;
-  }
+  let [finalMessage, setFinalMessage] = useState("");
+  let [finalMessageRevealWord, setFinalMessageRevealWord] = useState("");
 
   useEffect(() => {
-    setPlayable(playable);
-  });
+    if (wrongLetters.length > 5) {
+      const result = checkWin(correctLetters, wrongLetters, selectedWord);
+      let finalMessage = "";
+      let finalMessageRevealWord = "";
+
+      if (result === "win") {
+        finalMessage = "Congratulations! You won!";
+        setPlayable(false);
+      } else if (result === "lose") {
+        finalMessage = "You lost.";
+        finalMessageRevealWord = `...the word was: ${selectedWord}`;
+        setPlayable(false);
+      }
+
+      // Set the state here, not inside the if conditions
+      setFinalMessage(finalMessage);
+      setFinalMessageRevealWord(finalMessageRevealWord);
+    }
+  }, [correctLetters, wrongLetters, selectedWord, setPlayable]);
+
+  useEffect(() => {
+    setPlayable(true);
+  }, []);
 
   return (
-    <div className="popup-container" style={finalMessage !== "" ? { display: "flex" } : {}}>
+    <div className="popup-container" style={wrongLetters.length > 5 ? { display: "flex" } : {}}>
       <div className="popup">
         <h2>{finalMessage}</h2>
         <h3>{finalMessageRevealWord}</h3>

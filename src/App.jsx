@@ -8,28 +8,51 @@ import Notification from "./components/Notification";
 import { showNotificationFunc } from "./utils/helper";
 
 import "./App.css";
+import LevelPopup from "./components/LevelPopup";
 
 function App() {
+  const [level, setLevel] = useState();
+  const [levelPopup, setLevelPopup] = useState(true);
   const [selectedWord, setSelectedWord] = useState();
   const [playable, setPlayable] = useState(true);
   const [correctLetters, setCorrectLetters] = useState([]);
   const [wrongLetters, setWrongLetters] = useState([]);
   const [showNotification, setShowNotification] = useState(false);
 
-  const getWord = () => {
-    fetch("https://random-word-api.herokuapp.com/word")
-      .then(res => res.json())
-      .then(res => setSelectedWord(res[0]))
-      .catch(err => console.log(err));
+  const getWord = async () => {
+    try {
+      let lengthParam;
+
+      if (level === "easy") {
+        lengthParam = Math.floor(Math.random() * 3) + 5;
+      } else if (level === "medium") {
+        lengthParam = Math.floor(Math.random() * 4) + 7;
+      } else if (level === "hard") {
+        lengthParam = Math.min(Math.floor(Math.random() * 5) + 11, 15);
+      }
+
+      const response = await fetch(`https://random-word-api.herokuapp.com/word?length=${lengthParam}`);
+      const data = await response.json();
+
+      setSelectedWord(data[0]);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  useEffect(() => getWord(), []);
+  useEffect(() => {
+    if (level) {
+      getWord();
+    }
+  }, [level]);
 
   useEffect(() => {
-    const handleKeydown = event => {
-      const { key, keyCode } = event;
+    const handleKeydown = e => {
+      const { key, keyCode } = e;
       if (playable && keyCode >= 65 && keyCode <= 90) {
         const letter = key.toLowerCase();
+        console.log(letter);
+
         if (selectedWord.includes(letter)) {
           if (!correctLetters.includes(letter)) {
             setCorrectLetters(currentLetters => [...currentLetters, letter]);
@@ -54,6 +77,7 @@ function App() {
     setPlayable(true);
     setCorrectLetters([]);
     setWrongLetters([]);
+    setLevelPopup(true);
 
     getWord();
   }
@@ -66,6 +90,7 @@ function App() {
         <WrongLetters wrongLetters={wrongLetters} />
         <Word selectedWord={selectedWord} correctLetters={correctLetters} />
       </div>
+      <LevelPopup setLevel={setLevel} levelPopup={levelPopup} setLevelPopup={setLevelPopup} />
       <Popup
         correctLetters={correctLetters}
         wrongLetters={wrongLetters}
