@@ -9,20 +9,21 @@ import { showNotificationFunc } from "./utils/helper";
 
 import "./App.css";
 
-const words = ["application", "programming", "interface", "wizard"];
-let selectedWord = words[Math.floor(Math.random() * words.length)];
-
 function App() {
+  const [selectedWord, setSelectedWord] = useState();
   const [playable, setPlayable] = useState(true);
   const [correctLetters, setCorrectLetters] = useState([]);
   const [wrongLetters, setWrongLetters] = useState([]);
   const [showNotification, setShowNotification] = useState(false);
 
-  useEffect(() => {
+  const getWord = () => {
     fetch("https://random-word-api.herokuapp.com/word")
       .then(res => res.json())
-      .then(res => console.log(res));
-  }, []);
+      .then(res => setSelectedWord(res[0]))
+      .catch(err => console.log(err));
+  };
+
+  useEffect(() => getWord(), []);
 
   useEffect(() => {
     const handleKeydown = event => {
@@ -47,17 +48,14 @@ function App() {
     window.addEventListener("keydown", handleKeydown);
 
     return () => window.removeEventListener("keydown", handleKeydown);
-  }, [correctLetters, wrongLetters, playable]);
+  }, [correctLetters, wrongLetters, playable, selectedWord]);
 
   function playAgain() {
     setPlayable(true);
-
-    // Empty Arrays
     setCorrectLetters([]);
     setWrongLetters([]);
 
-    const random = Math.floor(Math.random() * words.length);
-    selectedWord = words[random];
+    getWord();
   }
 
   return (
