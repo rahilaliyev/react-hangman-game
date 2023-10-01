@@ -1,13 +1,8 @@
 import React from "react";
 
-const LevelPopup = ({ levelPopup, setLevelPopup, setLevel }) => {
-  const choisingLevel = level => {
-    setLevel(level);
-    setLevelPopup(false);
-  };
-
+const LevelPopup = ({ isLevelPopup, choisingLevel }) => {
   return (
-    <div className="popup-container" style={levelPopup ? { display: "flex" } : {}}>
+    <div className="popup-container" style={isLevelPopup ? { display: "flex" } : {}}>
       <div className="popup">
         <h2>Choose game level</h2>
         <div className="button-groups">

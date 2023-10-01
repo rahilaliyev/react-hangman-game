@@ -9,27 +9,22 @@ import { showNotificationFunc } from "./utils/helper";
 
 import "./App.css";
 import LevelPopup from "./components/LevelPopup";
+import { LEVELS_OBJ } from "./utils/constants";
 
 function App() {
   const [level, setLevel] = useState();
-  const [levelPopup, setLevelPopup] = useState(true);
   const [selectedWord, setSelectedWord] = useState();
-  const [playable, setPlayable] = useState(true);
   const [correctLetters, setCorrectLetters] = useState([]);
   const [wrongLetters, setWrongLetters] = useState([]);
-  const [showNotification, setShowNotification] = useState(false);
+  const [isLevelPopup, setIsLevelPopup] = useState(true);
+  const [isPlayable, setIsPlayable] = useState(true);
+  const [isShowNotification, setIsShowNotification] = useState(false);
 
   const getWord = async () => {
     try {
       let lengthParam;
 
-      if (level === "easy") {
-        lengthParam = Math.floor(Math.random() * 3) + 5;
-      } else if (level === "medium") {
-        lengthParam = Math.floor(Math.random() * 4) + 7;
-      } else if (level === "hard") {
-        lengthParam = Math.min(Math.floor(Math.random() * 5) + 11, 15);
-      }
+      lengthParam = LEVELS_OBJ[level];
 
       const response = await fetch(`https://random-word-api.herokuapp.com/word?length=${lengthParam}`);
       const data = await response.json();
@@ -49,21 +44,21 @@ function App() {
   useEffect(() => {
     const handleKeydown = e => {
       const { key, keyCode } = e;
-      if (playable && keyCode >= 65 && keyCode <= 90) {
+      if (isPlayable && level && keyCode >= 65 && keyCode <= 90) {
         const letter = key.toLowerCase();
         console.log(letter);
 
-        if (selectedWord.includes(letter)) {
+        if (selectedWord?.includes(letter)) {
           if (!correctLetters.includes(letter)) {
             setCorrectLetters(currentLetters => [...currentLetters, letter]);
           } else {
-            showNotificationFunc(setShowNotification);
+            showNotificationFunc(setIsShowNotification);
           }
         } else {
           if (!wrongLetters.includes(letter)) {
             setWrongLetters(currentLetters => [...currentLetters, letter]);
           } else {
-            showNotificationFunc(setShowNotification);
+            showNotificationFunc(setIsShowNotification);
           }
         }
       }
@@ -71,16 +66,21 @@ function App() {
     window.addEventListener("keydown", handleKeydown);
 
     return () => window.removeEventListener("keydown", handleKeydown);
-  }, [correctLetters, wrongLetters, playable, selectedWord]);
+  }, [correctLetters, wrongLetters, isPlayable, selectedWord, level]);
 
   function playAgain() {
-    setPlayable(true);
+    setIsPlayable(true);
     setCorrectLetters([]);
     setWrongLetters([]);
-    setLevelPopup(true);
+    setIsLevelPopup(true);
 
     getWord();
   }
+
+  const choisingLevel = level => {
+    setLevel(level);
+    setIsLevelPopup(false);
+  };
 
   return (
     <div className="App">
@@ -90,15 +90,17 @@ function App() {
         <WrongLetters wrongLetters={wrongLetters} />
         <Word selectedWord={selectedWord} correctLetters={correctLetters} />
       </div>
-      <LevelPopup setLevel={setLevel} levelPopup={levelPopup} setLevelPopup={setLevelPopup} />
+      <LevelPopup isLevelPopup={isLevelPopup} choisingLevel={choisingLevel} />
       <Popup
         correctLetters={correctLetters}
         wrongLetters={wrongLetters}
         selectedWord={selectedWord}
-        setPlayable={setPlayable}
+        isPlayable={isPlayable}
         playAgain={playAgain}
+        setIsPlayable={setIsPlayable}
+        setLevel={setLevel}
       />
-      <Notification showNotification={showNotification} />
+      <Notification isShowNotification={isShowNotification} />
     </div>
   );
 }

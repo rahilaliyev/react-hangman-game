@@ -1,37 +1,39 @@
 import React, { useEffect, useState } from "react";
 import { checkWin } from "../utils/helper";
 
-const Popup = ({ correctLetters, wrongLetters, selectedWord, setPlayable, playAgain }) => {
+const Popup = ({
+  correctLetters,
+  wrongLetters,
+  selectedWord,
+  setIsPlayable,
+  playAgain,
+  isPlayable,
+  setLevel,
+}) => {
   let [finalMessage, setFinalMessage] = useState("");
   let [finalMessageRevealWord, setFinalMessageRevealWord] = useState("");
 
   useEffect(() => {
-    if (wrongLetters.length > 5) {
-      const result = checkWin(correctLetters, wrongLetters, selectedWord);
-      let finalMessage = "";
-      let finalMessageRevealWord = "";
-
-      if (result === "win") {
-        finalMessage = "Congratulations! You won!";
-        setPlayable(false);
-      } else if (result === "lose") {
-        finalMessage = "You lost.";
-        finalMessageRevealWord = `...the word was: ${selectedWord}`;
-        setPlayable(false);
-      }
-
-      // Set the state here, not inside the if conditions
-      setFinalMessage(finalMessage);
-      setFinalMessageRevealWord(finalMessageRevealWord);
+    const result = checkWin(correctLetters, wrongLetters, selectedWord);
+    if (result === "win") {
+      setFinalMessage("Congratulations! You won!");
+      setFinalMessageRevealWord("");
+      setIsPlayable(false);
+      setLevel();
+    } else if (result === "lose") {
+      setFinalMessage("You lost.");
+      setFinalMessageRevealWord(`...the word was: ${selectedWord}`);
+      setIsPlayable(false);
+      setLevel();
     }
-  }, [correctLetters, wrongLetters, selectedWord, setPlayable]);
+  }, [correctLetters, setLevel, wrongLetters, selectedWord, setIsPlayable]);
 
   useEffect(() => {
-    setPlayable(true);
+    setIsPlayable(true);
   }, []);
 
   return (
-    <div className="popup-container" style={wrongLetters.length > 5 ? { display: "flex" } : {}}>
+    <div className="popup-container" style={!isPlayable ? { display: "flex" } : {}}>
       <div className="popup">
         <h2>{finalMessage}</h2>
         <h3>{finalMessageRevealWord}</h3>
